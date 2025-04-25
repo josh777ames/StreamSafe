@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Search Results{% endblock %}
+{% block content %}
+<h1>Search Results for "{{ query }}"</h1>
+<div class="movie-grid">
+    {% for movie in movies %}
+    <div class="movie">
+        <a href="/movie/{{ movie.id }}?{{ 'triggers=' + '&triggers='.join(request.args.getlist('triggers')) }}">
+            <img src="https://image.tmdb.org/t/p/w200{{ movie.poster_path }}" alt="{{ movie.title }}">
+            <p>{{ movie.title }}</p>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    let page = 2;
+    let loading = false;
+
+    window.onscroll = function () {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200 && !loading) {
+            loading = true;
+
+            const query = new URLSearchParams(window.location.search).get("q") || "";
+            const url = `/load_more?page=${page}&q=${encodeURIComponent(query)}`;
+
+            fetch(url)
+                .then(res => res.text())
+                .then(html => {
+                    const container = document.querySelector(".movie-grid");
+                    container.insertAdjacentHTML("beforeend", html);
+                    page++;
+                    loading = false;
+                });
+        }
+    };
+</script>
+
+{% endblock %}

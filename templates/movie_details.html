@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<style>
+    .movie-details {
+        max-width: 800px;
+        margin: 40px auto;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        color: #2c3032;
+    }
+
+    .movie-details img {
+        max-width: 200px;
+        border-radius: 10px;
+    }
+
+    .movie-details div {
+        flex: 1;
+        min-width: 300px;
+    }
+
+    .trigger-box {
+        max-width: 800px;
+        margin: 20px auto;
+        background: #f3eee4;
+        padding: 15px;
+        border-left: 6px solid #2c3032;
+        border-radius: 8px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .trigger-box h2 {
+        margin-top: 0;
+        font-size: 1.4em;
+        color: #2c3032;
+    }
+
+    .trigger-box ul {
+        list-style-type: disc;
+        padding-left: 20px;
+    }
+
+    .trigger-box p {
+        font-style: italic;
+        color: #2c3032;
+    }
+</style>
+
+<div class="movie-details">
+    <img src="{{ poster_url }}" alt="Poster of {{ title }}">
+    <div>
+        <h1>{{ title }}</h1>
+        <p><strong>Genres:</strong> {{ genres }}</p>
+        <p><strong>Director:</strong> {{ director }}</p>
+        <p><strong>Synopsis:</strong> {{ synopsis }}</p>
+        <p><a href="{{ imdb_link }}" target="_blank">View on IMDb</a></p>
+    </div>
+</div>
+
+{% if triggers %}
+<div class="trigger-box">
+    <h2>Trigger Warnings You Selected</h2>
+    <ul>
+        {% for trigger in triggers %}
+        <li>{{ trigger }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% else %}
+<div class="trigger-box">
+    <h2>Trigger Warnings You Selected</h2>
+    <p>No selected triggers were found in this movie.</p>
+</div>
+{% endif %}
+
+{% endblock %}

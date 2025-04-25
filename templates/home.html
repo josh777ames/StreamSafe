@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block title %}Popular Movies{% endblock %}
+
+{% block content %}
+<h1>Movie Catalogue</h1>
+
+<style>
+    .trigger-fieldset {
+        position: relative;
+        background: #f3eee4;
+        border: 10px solid #f3eee4;
+        margin: 0 auto 20px auto;
+        padding-top: 30px;
+        max-width: 1100px;
+        border-radius: 8px;
+    }
+
+    .trigger-legend {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #f3eee4;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+
+    .select-all-container {
+        text-align: center;
+        margin-bottom: 15px;
+    }
+
+    .trigger-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+    }
+
+    .trigger-category {
+        border: 1px solid #2c3032;
+        border-radius: 8px;
+        padding: 10px;
+        height: fit-content;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .trigger-category summary {
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .trigger-category label {
+        display: block;
+        margin: 5px 0;
+    }
+
+    .trigger-category:hover {
+            transform: scale(1.05);
+        }
+
+    .apply-button-container {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .apply-button {
+        padding: 10px 20px;
+        font-size: 1rem;
+        background-color: #2c3032;
+        color: #f3eee4;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    .select-all-button,
+    .apply-button {
+        padding: 8px 16px;
+        font-size: 0.95rem;
+        border-radius: 5px;
+        background-color: #2c3032;
+        color: #f3eee4;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.2s ease-in-out;
+    }
+
+    .select-all-button:hover,
+    .apply-button:hover {
+        background-color: #777;
+    }
+</style>
+
+<form id="trigger-form" method="get">
+    <fieldset class="trigger-fieldset">
+        <legend class="trigger-legend">Select Trigger Warnings to Track</legend>
+
+        <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 15px;">
+            <button type="button" id="toggle-all" class="select-all-button">
+                Select All
+            </button>
+            <button type="submit" class="apply-button">
+                Apply Filters
+            </button>
+        </div>
+
+        <div class="trigger-grid">
+            {% for category, triggers in all_triggers.items() %}
+                <details class="trigger-category">
+                    <summary>{{ category }}</summary>
+                    <div>
+                        {% for trigger in triggers %}
+                            <label>
+                                <input type="checkbox" name="triggers" value="{{ trigger }}"
+                                    {% if trigger in request.args.getlist('triggers') %}checked{% endif %}>
+                                {{ trigger }}
+                            </label>
+                        {% endfor %}
+                    </div>
+                </details>
+            {% endfor %}
+        </div>
+    </fieldset>
+</form>
+
+<div class="movie-grid">
+    {% for movie in movies %}
+    <div class="movie">
+        <a href="/movie/{{ movie.id }}?{{ 'triggers=' + '&triggers='.join(request.args.getlist('triggers')) }}">
+            <img src="https://image.tmdb.org/t/p/w200{{ movie.poster_path }}" alt="{{ movie.title }}">
+            <p>{{ movie.title }}</p>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    let page = 2;
+    let loading = false;
+
+    window.onscroll = function () {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200 && !loading) {
+            loading = true;
+
+            const query = new URLSearchParams(window.location.search).get("q") || "";
+            const url = `/load_more?page=${page}&q=${encodeURIComponent(query)}`;
+
+            fetch(url)
+                .then(res => res.text())
+                .then(html => {
+                    const container = document.querySelector(".movie-grid");
+                    container.insertAdjacentHTML("beforeend", html);
+                    page++;
+                    loading = false;
+                });
+        }
+    };
+</script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const toggleButton = document.getElementById("toggle-all");
+        const checkboxes = document.querySelectorAll("input[type='checkbox'][name='triggers']");
+    
+        toggleButton.addEventListener("click", () => {
+            const allChecked = [...checkboxes].every(cb => cb.checked);
+            checkboxes.forEach(cb => cb.checked = !allChecked);
+            toggleButton.textContent = allChecked ? "Select All" : "Deselect All";
+        });
+    });
+</script>
+    
+
+{% endblock %}
+
